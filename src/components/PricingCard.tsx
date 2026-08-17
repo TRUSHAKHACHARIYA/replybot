@@ -8,9 +8,36 @@ interface PricingCardProps {
   highlighted?: boolean;
   cta?: string;
   href?: string;
+  onSelect?: () => void;
 }
 
-export default function PricingCard({ name, price, description, features, highlighted, cta = "Get Started", href = "/signup" }: PricingCardProps) {
+export default function PricingCard({ name, price, description, features, highlighted, cta = "Get Started", href = "/signup", onSelect }: PricingCardProps) {
+  const planId = name.toLowerCase();
+
+  const buttonContent = onSelect ? (
+    <button
+      onClick={onSelect}
+      className={`mt-8 block w-full rounded-lg py-2.5 text-center text-sm font-semibold transition-colors cursor-pointer ${
+        highlighted
+          ? "bg-primary-500 text-white hover:bg-primary-600"
+          : "bg-surface text-text-primary border border-border hover:bg-primary-50 hover:border-primary-200"
+      }`}
+    >
+      {cta}
+    </button>
+  ) : (
+    <Link
+      href={href}
+      className={`mt-8 block w-full rounded-lg py-2.5 text-center text-sm font-semibold transition-colors ${
+        highlighted
+          ? "bg-primary-500 text-white hover:bg-primary-600"
+          : "bg-surface text-text-primary border border-border hover:bg-primary-50 hover:border-primary-200"
+      }`}
+    >
+      {cta}
+    </Link>
+  );
+
   return (
     <div className={`relative flex flex-col rounded-2xl border p-8 ${
       highlighted
@@ -40,16 +67,7 @@ export default function PricingCard({ name, price, description, features, highli
           </li>
         ))}
       </ul>
-      <Link
-        href={href}
-        className={`mt-8 block w-full rounded-lg py-2.5 text-center text-sm font-semibold transition-colors ${
-          highlighted
-            ? "bg-primary-500 text-white hover:bg-primary-600"
-            : "bg-surface text-text-primary border border-border hover:bg-primary-50 hover:border-primary-200"
-        }`}
-      >
-        {cta}
-      </Link>
+      {buttonContent}
     </div>
   );
 }

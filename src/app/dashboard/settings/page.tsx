@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
 
 interface Faq {
   id: string;
@@ -16,7 +17,14 @@ interface ShopSettings {
   business_hours: Array<{ day: string; open: string; close: string; enabled: boolean }>;
 }
 
+const PLAN_DETAILS = {
+  starter: { name: "Starter", price: 15, messages: 300 },
+  standard: { name: "Standard", price: 25, messages: 800 },
+  growth: { name: "Growth", price: 40, messages: 2000 },
+};
+
 export default function SettingsPage() {
+  const { profile } = useAuth();
   const [shop, setShop] = useState<ShopSettings | null>(null);
   const [faqs, setFaqs] = useState<Faq[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +45,6 @@ export default function SettingsPage() {
           setFaqs(faqData);
         }
       } catch {
-        // Fallback data
         setShop({
           id: "",
           name: "Style Boutique",
@@ -114,6 +121,9 @@ export default function SettingsPage() {
     }
   };
 
+  const currentPlan = (profile?.plan || "starter") as keyof typeof PLAN_DETAILS;
+  const planInfo = PLAN_DETAILS[currentPlan];
+
   if (loading) {
     return (
       <div className="space-y-8 max-w-4xl">
@@ -128,6 +138,20 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold text-text-primary">Settings</h1>
         <p className="mt-1 text-sm text-text-secondary">Configure your bot&apos;s behavior and responses.</p>
+      </div>
+
+      {/* Plan */}
+      <div className="bg-surface-card rounded-xl border border-border p-6">
+        <h2 className="text-sm font-semibold text-text-primary mb-4">Current Plan</h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-lg font-bold text-text-primary">{planInfo.name} Plan</p>
+            <p className="text-sm text-text-secondary">${planInfo.price}/month - {planInfo.messages} messages</p>
+          </div>
+          <a href="/pricing" className="px-4 py-2 rounded-lg text-sm font-semibold text-primary-600 bg-primary-50 hover:bg-primary-100 transition-colors">
+            Upgrade Plan
+          </a>
+        </div>
       </div>
 
       {/* General */}

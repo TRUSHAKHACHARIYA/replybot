@@ -1,11 +1,133 @@
+"use client";
+
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PricingCard from "@/components/PricingCard";
 
+const PLANS = [
+  {
+    id: "starter",
+    name: "Starter",
+    price: 15,
+    description: "Perfect for shops just getting started with WhatsApp.",
+    features: [
+      "WhatsApp only",
+      "FAQ auto-replies",
+      "Up to 300 messages/month",
+      "Business hours setup",
+      "Email support",
+      "Basic analytics",
+    ],
+  },
+  {
+    id: "standard",
+    name: "Standard",
+    price: 25,
+    description: "For shops active on both WhatsApp and Instagram.",
+    features: [
+      "WhatsApp + Instagram",
+      "FAQ + basic order-taking",
+      "Up to 800 messages/month",
+      "Lead forwarding to your phone",
+      "Priority email support",
+      "Conversation history",
+      "Custom bot personality",
+    ],
+    highlighted: true,
+  },
+  {
+    id: "growth",
+    name: "Growth",
+    price: 40,
+    description: "For growing shops that need more control and volume.",
+    features: [
+      "Both platforms",
+      "Unlimited FAQ topics",
+      "Higher message volume",
+      "Custom bot personality",
+      "Priority setup changes",
+      "Dedicated account manager",
+      "Monthly performance report",
+      "Abandoned inquiry follow-up",
+    ],
+  },
+];
+
 export default function PricingPage() {
+  const [loading, setLoading] = useState<string | null>(null);
+
+  async function handleSelectPlan(planId: string) {
+    setLoading(planId);
+
+    try {
+      const res = await fetch("/api/payments/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        if (res.status === 401) {
+          window.location.href = "/signup";
+          return;
+        }
+        alert(data.error || "Failed to create order");
+        return;
+      }
+
+      const { orderId, amount, currency } = await res.json();
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount,
+        currency,
+        name: "ReplyBot",
+        description: `Subscribe to ${planId.charAt(0).toUpperCase() + planId.slice(1)} Plan`,
+        order_id: orderId,
+        handler: async function (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) {
+          const verifyRes = await fetch("/api/payments/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...response,
+              planId,
+            }),
+          });
+
+          if (verifyRes.ok) {
+            alert("Payment successful! Your plan has been upgraded.");
+            window.location.href = "/dashboard";
+          } else {
+            alert("Payment verification failed. Please contact support.");
+          }
+        },
+        prefill: {
+          name: "",
+          email: "",
+          contact: "",
+        },
+        theme: {
+          color: "#0ea5e9",
+        },
+      };
+
+      const razorpay = new (window as unknown as { Razorpay: new (options: object) => { open: () => void } }).Razorpay(options);
+      razorpay.open();
+    } catch (error) {
+      console.error("Payment error:", error);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setLoading(null);
+    }
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
+
+      <script src="https://checkout.razorpay.com/v1/checkout.js" async />
 
       <section className="py-20 sm:py-28 bg-surface flex-1">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -19,52 +141,20 @@ export default function PricingPage() {
           </div>
 
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <PricingCard
-              name="Starter"
-              price={15}
-              description="Perfect for shops just getting started with WhatsApp."
-              features={[
-                "WhatsApp only",
-                "FAQ auto-replies",
-                "Up to 300 messages/month",
-                "Business hours setup",
-                "Email support",
-                "Basic analytics",
-              ]}
-            />
-            <PricingCard
-              name="Standard"
-              price={25}
-              description="For shops active on both WhatsApp and Instagram."
-              features={[
-                "WhatsApp + Instagram",
-                "FAQ + basic order-taking",
-                "Up to 800 messages/month",
-                "Lead forwarding to your phone",
-                "Priority email support",
-                "Conversation history",
-                "Custom bot personality",
-              ]}
-              highlighted
-            />
-            <PricingCard
-              name="Growth"
-              price={40}
-              description="For growing shops that need more control and volume."
-              features={[
-                "Both platforms",
-                "Unlimited FAQ topics",
-                "Higher message volume",
-                "Custom bot personality",
-                "Priority setup changes",
-                "Dedicated account manager",
-                "Monthly performance report",
-                "Abandoned inquiry follow-up",
-              ]}
-            />
+            {PLANS.map((plan) => (
+              <PricingCard
+                key={plan.id}
+                name={plan.name}
+                price={plan.price}
+                description={plan.description}
+                features={plan.features}
+                highlighted={plan.highlighted}
+                cta={loading === plan.id ? "Processing..." : "Get Started"}
+                onSelect={() => handleSelectPlan(plan.id)}
+              />
+            ))}
           </div>
 
-          {/* Comparison table */}
           <div className="mt-20 max-w-5xl mx-auto">
             <h2 className="text-2xl font-bold text-text-primary text-center mb-8">Feature Comparison</h2>
             <div className="overflow-x-auto">
@@ -116,7 +206,6 @@ export default function PricingPage() {
             </div>
           </div>
 
-          {/* FAQ */}
           <div className="mt-20 max-w-3xl mx-auto">
             <h2 className="text-2xl font-bold text-text-primary text-center mb-8">Frequently Asked Questions</h2>
             <div className="space-y-6">

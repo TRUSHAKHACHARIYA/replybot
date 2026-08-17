@@ -115,6 +115,20 @@ CREATE POLICY "Admins can read all messages" ON messages FOR SELECT USING (
   EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
 );
 
+-- Service role policies (for webhook API)
+CREATE POLICY "Service role can do everything" ON conversations FOR ALL USING (true);
+CREATE POLICY "Service role can do everything" ON messages FOR ALL USING (true);
+CREATE POLICY "Service role can do everything" ON shops FOR ALL USING (true);
+CREATE POLICY "Service role can do everything" ON faqs FOR ALL USING (true);
+
+-- Function to increment messages_used
+CREATE OR REPLACE FUNCTION increment_messages_used(shop_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE shops SET messages_used = messages_used + 1 WHERE id = shop_id;
+END;
+$$ LANGUAGE plpgsql;
+
 -- =============================================
 -- SEED DATA: Run after creating auth users
 -- =============================================
