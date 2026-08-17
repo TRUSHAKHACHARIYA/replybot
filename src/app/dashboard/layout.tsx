@@ -6,14 +6,14 @@ import AuthGuard from "@/components/AuthGuard";
 import { useAuth } from "@/lib/auth-context";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
+  const { profile, logout } = useAuth();
 
-  const initials = user?.shopName
+  const initials = profile?.shop_name
     ?.split(" ")
     .map((n) => n[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase() || "SB";
+    .toUpperCase() || "RB";
 
   return (
     <AuthGuard>
@@ -34,11 +34,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <span className="h-2 w-2 rounded-full bg-accent-500 animate-pulse" />
                 <span className="text-xs font-medium text-accent-600">Bot Active</span>
               </div>
-              <button
-                onClick={logout}
+              <button onClick={logout}
                 className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-sm font-semibold text-primary-600 hover:bg-primary-200 transition-colors"
-                title="Log out"
-              >
+                title="Log out">
                 {initials}
               </button>
             </div>

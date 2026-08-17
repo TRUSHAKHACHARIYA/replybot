@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -15,11 +15,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       router.push("/login");
       return;
     }
-    if (pathname.startsWith("/admin") && user.role !== "admin") {
+    if (pathname.startsWith("/admin") && profile && profile.role !== "admin") {
       router.push("/dashboard");
       return;
     }
-  }, [user, loading, router, pathname]);
+  }, [user, profile, loading, router, pathname]);
 
   if (loading) {
     return (

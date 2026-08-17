@@ -23,7 +23,7 @@ export default function SignupPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (formData.password.length < 6) {
@@ -31,20 +31,17 @@ export default function SignupPage() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      const result = signup(formData);
-      if (result.success) {
-        router.push("/dashboard");
-      } else {
-        setError(result.error || "Signup failed");
-      }
-      setLoading(false);
-    }, 500);
+    const result = await signup(formData);
+    if (result.success) {
+      router.push("/dashboard");
+    } else {
+      setError(result.error || "Signup failed");
+    }
+    setLoading(false);
   };
 
   return (
     <div className="flex min-h-screen">
-      {/* Left side - illustration */}
       <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-primary-50 to-primary-100 items-center justify-center p-12">
         <div className="max-w-md text-center">
           <div className="h-24 w-24 rounded-2xl bg-accent-500/10 flex items-center justify-center mx-auto mb-8">
@@ -71,7 +68,6 @@ export default function SignupPage() {
         </div>
       </div>
 
-      {/* Right side - form */}
       <div className="flex flex-1 flex-col justify-center px-6 py-12 lg:px-8 bg-white">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <Link href="/" className="flex items-center justify-center gap-2 mb-8">
@@ -95,73 +91,39 @@ export default function SignupPage() {
                 {error}
               </div>
             )}
+
             <div>
               <label htmlFor="shopName" className="block text-sm font-medium text-text-primary">Shop Name</label>
-              <input
-                id="shopName"
-                name="shopName"
-                type="text"
-                required
-                value={formData.shopName}
-                onChange={handleChange}
+              <input id="shopName" name="shopName" type="text" required value={formData.shopName} onChange={handleChange}
                 className="mt-2 block w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                placeholder="e.g. Style Boutique"
-              />
+                placeholder="e.g. Style Boutique" />
             </div>
 
             <div>
               <label htmlFor="ownerName" className="block text-sm font-medium text-text-primary">Your Name</label>
-              <input
-                id="ownerName"
-                name="ownerName"
-                type="text"
-                required
-                value={formData.ownerName}
-                onChange={handleChange}
+              <input id="ownerName" name="ownerName" type="text" required value={formData.ownerName} onChange={handleChange}
                 className="mt-2 block w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                placeholder="e.g. Priya Sharma"
-              />
+                placeholder="e.g. Priya Sharma" />
             </div>
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-text-primary">Email address</label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
+              <input id="email" name="email" type="email" autoComplete="email" required value={formData.email} onChange={handleChange}
                 className="mt-2 block w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                placeholder="you@example.com"
-              />
+                placeholder="you@example.com" />
             </div>
 
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-text-primary">Phone Number</label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                required
-                value={formData.phone}
-                onChange={handleChange}
+              <input id="phone" name="phone" type="tel" required value={formData.phone} onChange={handleChange}
                 className="mt-2 block w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                placeholder="+91 98765 43210"
-              />
+                placeholder="+91 98765 43210" />
             </div>
 
             <div>
               <label htmlFor="niche" className="block text-sm font-medium text-text-primary">Business Type</label>
-              <select
-                id="niche"
-                name="niche"
-                required
-                value={formData.niche}
-                onChange={handleChange}
-                className="mt-2 block w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-text-primary focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-              >
+              <select id="niche" name="niche" required value={formData.niche} onChange={handleChange}
+                className="mt-2 block w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-text-primary focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 <option value="">Select your business type</option>
                 <option value="boutique">Clothing Boutique</option>
                 <option value="salon">Salon / Spa</option>
@@ -174,24 +136,13 @@ export default function SignupPage() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-text-primary">Password</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={formData.password}
-                onChange={handleChange}
+              <input id="password" name="password" type="password" autoComplete="new-password" required value={formData.password} onChange={handleChange}
                 className="mt-2 block w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                placeholder="At least 8 characters"
-              />
+                placeholder="At least 6 characters" />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-accent-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-600 transition-colors disabled:opacity-50"
-            >
+            <button type="submit" disabled={loading}
+              className="w-full rounded-lg bg-accent-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-600 transition-colors disabled:opacity-50">
               {loading ? "Creating account..." : "Start Free Trial"}
             </button>
 

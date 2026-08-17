@@ -37,17 +37,17 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { profile, logout } = useAuth();
 
-  const initials = user?.shopName
+  const initials = profile?.shop_name
     ?.split(" ")
     .map((n) => n[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase() || "SB";
+    .toUpperCase() || "RB";
 
-  const planLabel = user?.plan
-    ? user.plan.charAt(0).toUpperCase() + user.plan.slice(1)
+  const planLabel = profile?.plan
+    ? profile.plan.charAt(0).toUpperCase() + profile.plan.slice(1)
     : "Starter";
 
   return (
@@ -56,15 +56,10 @@ export default function Sidebar() {
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
-            <Link
-              key={item.href}
-              href={item.href}
+            <Link key={item.href} href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-primary-50 text-primary-600"
-                  : "text-text-secondary hover:bg-surface hover:text-text-primary"
-              }`}
-            >
+                isActive ? "bg-primary-50 text-primary-600" : "text-text-secondary hover:bg-surface hover:text-text-primary"
+              }`}>
               {item.icon}
               {item.label}
             </Link>
@@ -77,14 +72,12 @@ export default function Sidebar() {
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-text-primary truncate">{user?.shopName || "Shop"}</p>
+            <p className="text-sm font-medium text-text-primary truncate">{profile?.shop_name || "Shop"}</p>
             <p className="text-xs text-text-muted truncate">{planLabel} Plan</p>
           </div>
         </div>
-        <button
-          onClick={logout}
-          className="w-full mt-2 flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
-        >
+        <button onClick={logout}
+          className="w-full mt-2 flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
           </svg>

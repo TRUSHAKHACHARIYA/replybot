@@ -13,25 +13,22 @@ export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      const result = login(email, password);
-      if (result.success && result.redirect) {
-        router.push(result.redirect);
-      } else {
-        setError(result.error || "Login failed");
-      }
-      setLoading(false);
-    }, 500);
+    const result = await login(email, password);
+    if (result.success && result.redirect) {
+      router.push(result.redirect);
+    } else {
+      setError(result.error || "Login failed");
+    }
+    setLoading(false);
   };
 
   return (
     <div className="flex min-h-screen">
-      {/* Left side - form */}
       <div className="flex flex-1 flex-col justify-center px-6 py-12 lg:px-8 bg-white">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <Link href="/" className="flex items-center justify-center gap-2 mb-8">
@@ -121,7 +118,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right side - illustration */}
       <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-primary-50 to-primary-100 items-center justify-center p-12">
         <div className="max-w-md text-center">
           <div className="h-24 w-24 rounded-2xl bg-primary-500/10 flex items-center justify-center mx-auto mb-8">
