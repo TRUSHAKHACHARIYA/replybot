@@ -17,6 +17,7 @@ export default function AdminShopsPage() {
   const [shops, setShops] = useState<ShopData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [toggling, setToggling] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchShops = async () => {
@@ -38,6 +39,21 @@ export default function AdminShopsPage() {
       (shop.profiles?.name || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleToggleBot = async (shopId: string, current: boolean) => {
+    setToggling(shopId);
+    try {
+      await fetch(`/api/shops/${shopId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bot_active: !current }),
+      });
+      setShops((prev) => prev.map((s) => s.id === shopId ? { ...s, bot_active: !current } : s));
+    } catch {
+      // ignore
+    }
+    setToggling(null);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -45,7 +61,6 @@ export default function AdminShopsPage() {
           <h1 className="text-2xl font-bold text-text-primary">Shops</h1>
           <p className="mt-1 text-sm text-text-secondary">Manage all registered shops and their accounts.</p>
         </div>
-        <button className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 transition-colors">+ Add Shop</button>
       </div>
 
       <div className="max-w-md">
@@ -68,13 +83,16 @@ export default function AdminShopsPage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-text-primary">{shop.name}</h3>
-                    <p className="text-xs text-text-muted">{shop.profiles?.name || "—"}</p>
+                    <p className="text-xs text-text-muted">{shop.profiles?.name || "\u2014"}</p>
                   </div>
                 </div>
-                <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${shop.bot_active ? "text-accent-600" : "text-red-500"}`}>
+                <button onClick={() => handleToggleBot(shop.id, shop.bot_active)} disabled={toggling === shop.id}
+                  className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full transition-colors ${
+                    shop.bot_active ? "bg-accent-50 text-accent-600 hover:bg-accent-100" : "bg-red-50 text-red-500 hover:bg-red-100"
+                  } disabled:opacity-50`}>
                   <span className={`h-1.5 w-1.5 rounded-full ${shop.bot_active ? "bg-accent-500" : "bg-red-500"}`} />
-                  {shop.bot_active ? "Active" : "Inactive"}
-                </span>
+                  {toggling === shop.id ? "..." : shop.bot_active ? "Active" : "Inactive"}
+                </button>
               </div>
 
               <div className="mt-4 space-y-2">
@@ -92,7 +110,7 @@ export default function AdminShopsPage() {
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-text-secondary">Contact</span>
-                  <span className="font-medium text-text-primary">{shop.profiles?.email || "—"}</span>
+                  <span className="font-medium text-text-primary">{shop.profiles?.email || "\u2014"}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-text-secondary">Joined</span>
@@ -101,8 +119,11 @@ export default function AdminShopsPage() {
               </div>
 
               <div className="mt-4 flex gap-2">
-                <button className="flex-1 px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-text-secondary hover:bg-surface transition-colors">View Details</button>
-                <button className="flex-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors">Manage Bot</button>
+                <a href={`/dashboard/settings`} className="flex-1 px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-text-secondary hover:bg-surface transition-colors text-center">View Details</a>
+                <button onClick={() => handleToggleBot(shop.id, shop.bot_active)}
+                  className="flex-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors">
+                  {shop.bot_active ? "Disable Bot" : "Enable Bot"}
+                </button>
               </div>
             </div>
           ))}

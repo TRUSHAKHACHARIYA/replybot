@@ -250,7 +250,7 @@ export default function SettingsPage() {
 
       {/* Save */}
       <div className="flex items-center justify-end gap-3 pb-8">
-        <button className="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary border border-border hover:bg-surface transition-colors">Cancel</button>
+        <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary border border-border hover:bg-surface transition-colors">Cancel</button>
         <button onClick={handleSaveShop} disabled={saving || !shop?.id}
           className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 transition-colors disabled:opacity-50">
           {saving ? "Saving..." : "Save Changes"}

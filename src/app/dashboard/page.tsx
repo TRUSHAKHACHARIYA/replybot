@@ -42,17 +42,13 @@ export default function DashboardPage() {
       try {
         const shopRes = await fetch("/api/shops");
         const shops = await shopRes.json();
-        if (shops && shops.length > 0) {
-          setShop(shops[0]);
-        }
+        if (shops && shops.length > 0) setShop(shops[0]);
 
         const convRes = await fetch("/api/conversations");
         const convs = await convRes.json();
-        if (convs) {
-          setConversations(convs.slice(0, 5));
-        }
+        if (Array.isArray(convs)) setConversations(convs.slice(0, 5));
       } catch {
-        // API not connected yet - use fallback
+        // API not connected
       }
       setLoading(false);
     };
@@ -60,20 +56,17 @@ export default function DashboardPage() {
   }, []);
 
   const recentMessages = conversations.length > 0
-    ? conversations[0]?.messages?.slice(-4).map((m) => ({
+    ? conversations.flatMap((c) => (c.messages || []).slice(-2).map((m) => ({
         sender: m.sender as "customer" | "bot" | "owner",
-        name: conversations[0].customer_name,
+        name: c.customer_name,
         message: m.content,
         time: new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      })) || []
-    : [
-        { sender: "customer" as const, name: "Anita", message: "Is the blue kurta available in size M?", time: "2 min ago" },
-        { sender: "bot" as const, message: "Yes! The blue kurta is available in M and L. Would you like me to share photos?", time: "2 min ago" },
-      ];
+      }))).slice(-4)
+    : [];
 
-  const hoursUsed = shop?.messages_used ?? 47;
+  const hoursUsed = shop?.messages_used ?? 0;
   const hoursLimit = shop?.messages_limit ?? 300;
-  const usagePercent = Math.round((hoursUsed / hoursLimit) * 100);
+  const usagePercent = hoursLimit > 0 ? Math.round((hoursUsed / hoursLimit) * 100) : 0;
 
   return (
     <div className="space-y-8">
@@ -85,14 +78,14 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard title="Messages Today" value={hoursUsed} change={`${conversations.length} conversations`} changeType="positive"
+        <StatsCard title="Messages Used" value={hoursUsed} change={`${conversations.length} conversations`} changeType="positive"
           icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>} />
         <StatsCard title="Auto-Replied" value={Math.round(hoursUsed * 0.81)} change="81% of messages" changeType="positive"
           icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>} />
-        <StatsCard title="Leads Captured" value={conversations.filter((c) => c.status === "active").length} change="Active conversations" changeType="positive"
+        <StatsCard title="Active Leads" value={conversations.filter((c) => c.status === "active").length} change="Active conversations" changeType="positive"
           icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>} />
-        <StatsCard title="Handed to You" value={conversations.filter((c) => c.status === "escalated").length || 9} change="Complex questions" changeType="neutral"
-          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>} />
+        <StatsCard title="Escalated" value={conversations.filter((c) => c.status === "escalated").length} change="Needs attention" changeType="neutral"
+          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -129,7 +122,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-text-secondary">Platform</span>
-                <span className="text-sm font-medium text-text-primary capitalize">{shop?.platform || "WhatsApp"}</span>
+                <span className="text-sm font-medium text-text-primary capitalize">{shop?.platform || "Not set"}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-text-secondary">Plan</span>
@@ -148,11 +141,7 @@ export default function DashboardPage() {
           <div className="bg-surface-card rounded-xl border border-border p-6">
             <h2 className="text-sm font-semibold text-text-primary mb-4">Business Hours</h2>
             <div className="space-y-2">
-              {(shop?.business_hours || [
-                { day: "Mon - Fri", open: "9:00", close: "20:00", enabled: true },
-                { day: "Saturday", open: "10:00", close: "18:00", enabled: true },
-                { day: "Sunday", open: "", close: "", enabled: false },
-              ]).slice(0, 3).map((schedule) => (
+              {(shop?.business_hours || []).slice(0, 3).map((schedule) => (
                 <div key={schedule.day} className="flex items-center justify-between">
                   <span className="text-sm text-text-secondary">{schedule.day}</span>
                   <span className="text-sm font-medium text-text-primary">
@@ -160,6 +149,9 @@ export default function DashboardPage() {
                   </span>
                 </div>
               ))}
+              {(!shop?.business_hours || shop.business_hours.length === 0) && (
+                <p className="text-sm text-text-muted">No business hours configured</p>
+              )}
             </div>
           </div>
 

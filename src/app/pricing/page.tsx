@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Script from "next/script";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PricingCard from "@/components/PricingCard";
@@ -127,7 +128,7 @@ export default function PricingPage() {
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      <script src="https://checkout.razorpay.com/v1/checkout.js" async />
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
 
       <section className="py-20 sm:py-28 bg-surface flex-1">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
